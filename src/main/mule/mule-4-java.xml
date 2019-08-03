@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:java="http://www.mulesoft.org/schema/mule/java"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/java http://www.mulesoft.org/schema/mule/java/current/mule-java.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="1e80c20e-9e16-4b4c-be4e-6d2c54a1263b" >
+		<http:listener-connection host="0.0.0.0" port="8086" />
+	</http:listener-config>
+	<flow name="mule-4-javaFlow" doc:id="ee238c05-d2e1-4446-9331-d80d721d845e" >
+		<http:listener doc:name="Listener" doc:id="48d70635-8565-416b-939b-0594033c5408" config-ref="HTTP_Listener_config" path="/api/data"/>
+		<java:new doc:name="Generate Data" doc:id="d3c8ca65-3503-4a1f-ae87-feb16ce7fa25" class="org.mule4.test.DataGen" constructor="DataGen()" target="GenerateData"/>
+		<java:invoke method="generateData(java.lang.String,java.lang.String,java.lang.String,java.lang.String)" doc:name="Invoke" doc:id="da3027b8-95fa-40fb-a8a9-8eb25dcaae30" class="org.mule4.test.DataGen" instance="#[vars.GenerateData]">
+			<java:args ><![CDATA[#[{name :payload.name, org :payload.org, location : payload.location, role : payload.role}]]]></java:args>
+		</java:invoke>
+		<ee:transform doc:name="Transform Message" doc:id="64e60370-c35d-4078-a730-738eee9d9a64" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>
